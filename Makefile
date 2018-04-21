@@ -1,7 +1,7 @@
 CC=gcc
 CFLAGS=-I. -Ilocal $(OPTFLAGS)
 LIBS=$(OPTLIBS)
-SOURCES=local/main.cpp i8080.c local/i8080_hal.c
+SOURCES=local/main.c i8080.c local/i8080_hal.c
 #$(wildcard src/**/*.c src/*.c)
 OBJECTS=$(patsubst %.c,%.o,$(SOURCES))
 
