@@ -82,8 +82,6 @@ char port8buffer[1024];
 int port8bufferIndex = 0;
 int port8zeroaccumulator = 0;
 
-#define SHOULD_PRINT_BIN 0
-
 void hal_io_output(int port, int value) {
 	int i;
   switch (port) {
@@ -106,13 +104,18 @@ void hal_io_output(int port, int value) {
 		if (port8zeroaccumulator == 3 && port8bufferIndex >= 7) // end of CSAVE reached when 3 '\0' in a row, flush to a file
 		{
 			// "program name" will be 4th character in stream
-			char filename[7];
-			if (SHOULD_PRINT_BIN)
-				sprintf(filename, "%c.bin", (char)port8buffer[3]);
-			else
-				sprintf(filename, "%c.txt", (char)port8buffer[3]);
-			FILE *f = fopen(filename, "w");
-			if (f == NULL)
+			char binFilename[7];
+      char txtFilename[7];
+      sprintf(binFilename, "%c.bin", (char)port8buffer[3]);
+      sprintf(txtFilename, "%c.txt", (char)port8buffer[3]);
+			FILE *fBin = fopen(binFilename, "w");
+			if (fBin == NULL)
+			{
+				printf("Error opening file!\n");
+				exit(1);
+			}
+      FILE *fTxt = fopen(txtFilename, "w");
+			if (fTxt == NULL)
 			{
 				printf("Error opening file!\n");
 				exit(1);
@@ -120,17 +123,14 @@ void hal_io_output(int port, int value) {
 
 			for (i = 0; i < port8bufferIndex; i++)
 			{
-				if (SHOULD_PRINT_BIN)
-					fprintf(f, "%c", port8buffer[i] & 0x7f);
-				else
-				{
-					fprintf(f, "%#04x, ", port8buffer[i] & 0x7f);
+					fprintf(fBin, "%c", port8buffer[i]);
+					fprintf(fTxt, "%#04x, ", port8buffer[i] & 0XFF);
 					if ((i+1) % 10 == 0)
-						fprintf(f, "\n");
-				}
+						fprintf(fTxt, "\n");
 			}
-			fprintf(f, "\n");
-			fclose(f);
+			fprintf(fTxt, "\n");
+			fclose(fBin);
+      fclose(fTxt);
 		}
     case 0x08:
       disk_select(value);
